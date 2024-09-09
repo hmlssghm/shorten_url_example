@@ -6,11 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 @Controller
 public class UrlShortnerController {
@@ -18,6 +17,18 @@ public class UrlShortnerController {
     @Autowired
     private UrlShortenerService urlShortenerService;
 
+    // url 단축
+    @PostMapping
+    public ResponseEntity<String> shortening (@RequestBody String longUrl) throws NoSuchAlgorithmException {
+        String shortUrl = urlShortenerService.shortening(longUrl);
+        if (shortUrl != null) {
+            return new ResponseEntity<>(shortUrl, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    // url 조회
     @GetMapping("/{shortUrl}")
     public ResponseEntity<Void> redirect (@PathVariable String shortUrl, HttpServletResponse response) throws IOException {
         String longUrl = urlShortenerService.getLongUrl(shortUrl);
@@ -26,6 +37,17 @@ public class UrlShortnerController {
             return ResponseEntity.status(HttpStatus.FOUND).build();
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    // url 삭제
+    @DeleteMapping("/{shortUrl}")
+    public ResponseEntity<String> delete (@PathVariable String shortUrl) {
+        Boolean deleted = urlShortenerService.deleteUrl(shortUrl);
+        if (deleted) {
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
     }
 }
