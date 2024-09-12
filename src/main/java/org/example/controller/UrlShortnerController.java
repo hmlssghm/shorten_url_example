@@ -20,7 +20,7 @@ public class UrlShortnerController {
     // url 단축
     @PostMapping("/shortening")
     public ResponseEntity<String> generate (@RequestBody String longUrl) throws NoSuchAlgorithmException {
-        String shortUrl = urlShortenerService.generate(longUrl);
+        String shortUrl = urlShortenerService.createOrRetrieveShortUrl(longUrl);
         if (shortUrl != null) {
             return new ResponseEntity<>(shortUrl, HttpStatus.OK);
         } else {
@@ -48,6 +48,16 @@ public class UrlShortnerController {
             return new ResponseEntity<>(null, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @DeleteMapping("/cleanup")
+    public ResponseEntity<String> cleanupExpiredUrls() {
+        try {
+            UrlShortenerService.cleanupExpiredUrls();
+            return ResponseEntity.ok("Expired URLs cleaned up successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error cleaning up URLs");
         }
     }
 }

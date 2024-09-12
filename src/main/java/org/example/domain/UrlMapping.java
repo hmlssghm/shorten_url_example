@@ -21,9 +21,9 @@ public class UrlMapping {
     private String longUrl;
 
     @CreatedDate
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
-    private LocalDateTime last_accessed;
+    private LocalDateTime lastAccessed;
 
-    private LocalDateTime expires_at;
+    private LocalDateTime expiresAt;
 }

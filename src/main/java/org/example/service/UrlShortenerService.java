@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UrlShortenerService {
@@ -15,8 +17,11 @@ public class UrlShortenerService {
 
     private int counter = 0; // 카운터 초기화
 
+    private static final int URL_EXPIRATION_DAYS = 30; // 만료 기간 설정
+    private static final int INACTIVITY_DAYS = 7; // 비활성 기간 설정
+
     @Autowired
-    private UrlShortenerRepository urlShortenerRepository;
+    private static UrlShortenerRepository urlShortenerRepository;
 
     // url 단축
     public String generate(String longUrl) throws NoSuchAlgorithmException {
@@ -83,5 +88,39 @@ public class UrlShortenerService {
         urlShortenerRepository.delete(urlMapping);
 
         return true;
+    }
+
+    public String createOrRetrieveShortUrl(String longUrl) throws NoSuchAlgorithmException {
+        String shortUrl = generate(longUrl);
+
+        LocalDateTime now = LocalDateTime.now();
+        UrlMapping existingUrl = urlShortenerRepository.findByShortUrlAndExpiresAtAfter(shortUrl, now);
+
+        if (existingUrl != null) {
+            // URL이 존재하고 유효하면 반환
+            UrlMapping urlEntity = existingUrl;
+            urlEntity.setLastAccessed(now);
+            urlShortenerRepository.save(urlEntity);
+            return shortUrl;
+        }
+
+        // URL이 존재하지 않거나 만료된 경우, 새로운 URL을 생성
+        UrlMapping newUrlMapping = new UrlMapping();
+        newUrlMapping.setLongUrl(longUrl);
+        newUrlMapping.setShortUrl(shortUrl);
+        newUrlMapping.setCreatedAt(now);
+        newUrlMapping.setLastAccessed(now);
+        newUrlMapping.setExpiresAt(now.plusDays(URL_EXPIRATION_DAYS));
+
+        urlShortenerRepository.save(newUrlMapping);
+        return shortUrl;
+    }
+
+    public static void cleanupExpiredUrls() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime threshold = now.minusDays(INACTIVITY_DAYS);
+
+        List<UrlMapping> expiredOrInactiveUrls = urlShortenerRepository.findExpiredOrInactiveUrls(now, threshold);
+        urlShortenerRepository.deleteAll(expiredOrInactiveUrls);
     }
 }
