@@ -18,13 +18,13 @@ public class UrlShortnerController {
     private UrlShortenerService urlShortenerService;
 
     // url 단축
-    @PostMapping
-    public ResponseEntity<String> shortening (@RequestBody String longUrl) throws NoSuchAlgorithmException {
-        String shortUrl = urlShortenerService.shortening(longUrl);
+    @PostMapping("/shortening")
+    public ResponseEntity<String> generate (@RequestBody String longUrl) throws NoSuchAlgorithmException {
+        String shortUrl = urlShortenerService.generate(longUrl);
         if (shortUrl != null) {
             return new ResponseEntity<>(shortUrl, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 

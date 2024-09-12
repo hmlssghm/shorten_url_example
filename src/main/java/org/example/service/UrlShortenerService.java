@@ -15,7 +15,7 @@ public class UrlShortenerService {
     private UrlShortenerRepository urlShortenerRepository;
 
     // url 단축
-    public String shortening(String longUrl) throws NoSuchAlgorithmException {
+    public String generate(String longUrl) throws NoSuchAlgorithmException {
         UrlMapping urlSet = new UrlMapping();
         urlSet.setLongUrl(longUrl);
 
