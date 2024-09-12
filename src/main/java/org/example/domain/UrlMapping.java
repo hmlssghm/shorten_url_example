@@ -22,4 +22,8 @@ public class UrlMapping {
 
     @CreatedDate
     private LocalDateTime created_at;
+
+    private LocalDateTime last_accessed;
+
+    private LocalDateTime expires_at;
 }
