@@ -13,6 +13,8 @@ public class UrlShortenerService {
 
     private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
+    private int counter = 0; // 카운터 초기화
+
     @Autowired
     private UrlShortenerRepository urlShortenerRepository;
 
@@ -53,8 +55,20 @@ public class UrlShortenerService {
             shortUrl.append('a');
         }
 
-        // 6자리로 잘라서 반환
-        return shortUrl.toString().substring(0, 6);
+        // 6자리로 자름
+        String sixShortUrl = shortUrl.toString().substring(0, 6);
+
+        // 충돌 해결을 위한 카운터 사용
+        while (urlShortenerRepository.existsByShortUrl(sixShortUrl)) {
+            // 카운터 값을 추가하여 새로운 짧은 URL 생성
+            sixShortUrl = shortUrl.toString().substring(0, 6) + Integer.toString(counter++);
+            if (counter > 9999) { // 카운터가 너무 커지면 방지 로직 추가
+                throw new RuntimeException("Unique URL generation failed");
+            }
+        }
+
+        return sixShortUrl;
+
     }
 
     // url 조회
